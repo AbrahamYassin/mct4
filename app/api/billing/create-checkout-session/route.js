@@ -1,0 +1,2 @@
+import Stripe from 'stripe'
+export async function POST(){ if(!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID || !process.env.APP_URL){ return Response.json({error:'Stripe not configured'},{status:400}) } const stripe=new Stripe(process.env.STRIPE_SECRET_KEY); const s=await stripe.checkout.sessions.create({mode:'subscription', line_items:[{price:process.env.STRIPE_PRICE_ID,quantity:1}], success_url:`${process.env.APP_URL}/dashboard`, cancel_url:`${process.env.APP_URL}/pricing`}); return Response.json({url:s.url}) }

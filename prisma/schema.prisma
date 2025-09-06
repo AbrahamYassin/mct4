@@ -1,0 +1,29 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "mysql"; url = env("DATABASE_URL") }
+
+model User {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  email        String   @unique
+  passwordHash String
+  rolesJson    Json     @default("[]")
+  cvs          Cv[]
+}
+
+model Cv {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  personal    Json?
+  skills      Json?
+  languages   Json?
+  experiences Json?
+  education   Json?
+  projects    Json?
+  template    String   @default("modern")
+  themeColor  String   @default("#2563eb")
+}

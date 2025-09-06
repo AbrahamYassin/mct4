@@ -1,0 +1,6 @@
+import { getUserIdFromCookie } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+
+export async function GET(_, { params }){ const uid=getUserIdFromCookie(); if(!uid) return Response.json({error:'Unauthorized'},{status:401}); const cv=await prisma.cv.findFirst({ where:{ id: params.id, userId: uid } }); if(!cv) return Response.json({error:'Not found'},{status:404}); return Response.json(cv) }
+export async function PUT(req,{ params }){ const uid=getUserIdFromCookie(); if(!uid) return Response.json({error:'Unauthorized'},{status:401}); const data=await req.json(); const prev=await prisma.cv.findUnique({ where:{ id: params.id } }); if(!prev || prev.userId!==uid) return Response.json({error:'Not found'},{status:404}); const cv=await prisma.cv.update({ where:{ id: params.id }, data }); return Response.json(cv) }
+export async function DELETE(_, { params }){ const uid=getUserIdFromCookie(); if(!uid) return Response.json({error:'Unauthorized'},{status:401}); const prev=await prisma.cv.findUnique({ where:{ id: params.id } }); if(!prev || prev.userId!==uid) return Response.json({error:'Not found'},{status:404}); await prisma.cv.delete({ where:{ id: params.id } }); return Response.json({ok:true}) }

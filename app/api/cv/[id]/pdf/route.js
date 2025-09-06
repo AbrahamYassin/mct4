@@ -1,0 +1,6 @@
+import { getUserIdFromCookie } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+const s = StyleSheet.create({ page:{padding:24}, h1:{fontSize:20, marginBottom:6}, h2:{fontSize:14, marginTop:8, color:'#374151'}, p:{fontSize:10, marginBottom:2} })
+function Doc({ cv }){ return (<Document><Page size="A4" style={s.page}><Text style={s.h1}>{cv.personal?.fullName||''}</Text><Text style={s.p}>{cv.personal?.title||''}</Text><Text style={s.p}>{[cv.personal?.email,cv.personal?.phone,cv.personal?.location].filter(Boolean).join(' • ')}</Text>{cv.personal?.summary?(<><Text style={s.h2}>Résumé</Text><Text style={s.p}>{cv.personal.summary}</Text></>):null}</Page></Document>) }
+export async function GET(_, { params }){ const uid=getUserIdFromCookie(); if(!uid) return new Response('Unauthorized',{status:401}); const cv=await prisma.cv.findFirst({ where:{ id: params.id, userId: uid } }); if(!cv) return new Response('Not found',{status:404}); const file=await pdf(<Doc cv={cv} />).toBuffer(); return new Response(file,{status:200,headers:{'Content-Type':'application/pdf','Content-Disposition':`inline; filename="cv-${params.id}.pdf"`}}) }
